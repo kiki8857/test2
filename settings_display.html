@@ -1,0 +1,50 @@
+<div id="cloud-backup-settings" class="cloud-backup-container extensions_settings">
+  <div class="inline-drawer">
+    <div class="inline-drawer-toggle inline-drawer-header">
+      <b>聊天云备份</b>
+      <div class="inline-drawer-icon fa-solid fa-circle-chevron-down"></div>
+    </div>
+    <div class="inline-drawer-content">
+      <div class="cloud-backup-section">
+        <div class="cloud-backup-row">
+          <span class="cloud-backup-label">插件状态:</span>
+          <select id="cloud-backup-toggle">
+            <option value="enabled">开启</option>
+            <option value="disabled">关闭</option>
+          </select>
+        </div>
+
+        <div class="cloud-backup-row">
+          <span class="cloud-backup-label">自动备份:</span>
+          <input type="checkbox" id="cloud-backup-auto-toggle" />
+        </div>
+
+        <div class="cloud-backup-row">
+          <span class="cloud-backup-label">备份间隔 (分钟):</span>
+          <input type="number" id="cloud-backup-interval" min="5" value="60" />
+        </div>
+
+        <div class="cloud-backup-row">
+          <span class="cloud-backup-label">API地址:</span>
+          <input type="text" id="cloud-backup-api-url" placeholder="https://example.com/api/backup" />
+        </div>
+
+        <div class="cloud-backup-row">
+          <span class="cloud-backup-label">API密钥:</span>
+          <input type="password" id="cloud-backup-api-key" placeholder="您的API密钥" />
+        </div>
+
+        <div class="cloud-backup-row">
+          <button id="cloud-backup-now-button" class="menu_button">立即备份</button>
+          <button id="cloud-backup-export-button" class="menu_button">导出到本地</button>
+        </div>
+
+        <div class="cloud-backup-row">
+          <span class="cloud-backup-label">上次备份:</span>
+          <span id="cloud-backup-last-time">从未</span>
+        </div>
+      </div>
+      <hr class="sysHR" />
+    </div>
+  </div>
+</div>

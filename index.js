@@ -233,6 +233,47 @@ $(document).ready(function () {
       return;
     }
 
+    console.log(`[${pluginName}] 开始创建设置UI...`);
+
+    // 加载外部HTML模板
+    jQuery.ajax({
+      url: `/scripts/extensions/${pluginName}/settings_display.html`,
+      cache: false,
+      success: function (html) {
+        // 添加UI到设置区域
+        $('#extensions_settings').append(html);
+
+        console.log(`[${pluginName}] 设置模板加载成功，已添加到DOM`);
+
+        // 更新UI元素的值
+        $('#cloud-backup-toggle').val(extension_settings[pluginName].enabled ? 'enabled' : 'disabled');
+        $('#cloud-backup-auto-toggle').prop('checked', extension_settings[pluginName].autoBackup);
+        $('#cloud-backup-interval').val(extension_settings[pluginName].backupInterval);
+        $('#cloud-backup-api-url').val(extension_settings[pluginName].apiUrl);
+        $('#cloud-backup-api-key').val(extension_settings[pluginName].apiKey);
+
+        if (extension_settings[pluginName].lastBackup) {
+          $('#cloud-backup-last-time').text(new Date(extension_settings[pluginName].lastBackup).toLocaleString());
+        }
+
+        // 绑定事件处理器
+        bindSettingsEvents();
+
+        // 初始化抽屉功能
+        initializeDrawer();
+      },
+      error: function (jqXHR, textStatus, errorThrown) {
+        console.error(`[${pluginName}] 加载设置模板失败:`, textStatus, errorThrown);
+        // 失败时使用备用方法
+        createSettingsFallback();
+      },
+    });
+  }
+
+  // 备用设置创建方法（在加载HTML模板失败时使用）
+  function createSettingsFallback() {
+    console.log(`[${pluginName}] 使用备用方法创建设置UI...`);
+
     // 创建HTML模板字符串
     const settingsHtml = `
       <div id="cloud-backup-settings" class="cloud-backup-container extensions_settings">
@@ -299,16 +340,17 @@ $(document).ready(function () {
       </div>`;
 
     // 添加UI到设置区域
-    $('#extensions_settings2').append(settingsHtml);
+    $('#extensions_settings').append(settingsHtml);
 
-    // 如果#extensions_settings2不存在，尝试添加到#extensions_settings
-    if ($('#extensions_settings2').length === 0) {
-      $('#extensions_settings').append(settingsHtml);
-    }
+    // 绑定事件处理器
+    bindSettingsEvents();
 
-    // 设置UI事件
-    $('#cloud-backup-toggle').val(extension_settings[pluginName].enabled ? 'enabled' : 'disabled');
+    // 初始化抽屉功能
+    initializeDrawer();
+  }
 
+  // 绑定设置事件处理器
+  function bindSettingsEvents() {
     // 插件状态切换
     $('#cloud-backup-toggle').on('change', function () {
       extension_settings[pluginName].enabled = $(this).val() === 'enabled';
@@ -377,16 +419,6 @@ $(document).ready(function () {
         $(this).prop('disabled', false).text('导出到本地');
       }
     });
-
-    // 初始化抽屉功能
-    initializeDrawer();
-
-    // 检查抽屉是否正确初始化，如果没有，手动再次尝试
-    setTimeout(() => {
-      if (!$('#cloud-backup-settings .inline-drawer-content').is(':visible')) {
-        initializeDrawer();
-      }
-    }, 1000);
   }
 
   // 初始化抽屉展开/收起功能
@@ -421,20 +453,89 @@ $(document).ready(function () {
       }
     `;
     document.head.appendChild(style);
+
+    // 检查抽屉是否正确初始化，如果没有，手动再次尝试
+    setTimeout(() => {
+      if ($('#cloud-backup-settings').length > 0) {
+        console.log(`[${pluginName}] 设置面板已找到，重新检查事件绑定`);
+        toggleElements.off('click').on('click', function () {
+          const icon = $(this).find('.inline-drawer-icon');
+          const content = $(this).next('.inline-drawer-content');
+
+          if (content.is(':visible')) {
+            icon.removeClass('fa-circle-chevron-up').addClass('fa-circle-chevron-down');
+            content.slideUp(200);
+          } else {
+            icon.removeClass('fa-circle-chevron-down').addClass('fa-circle-chevron-up');
+            content.slideDown(200);
+          }
+        });
+      } else {
+        console.log(`[${pluginName}] 设置面板未找到，可能需要重新创建`);
+      }
+    }, 1000);
   }
 
   // 插件初始化时执行的事件
   eventSource.on(event_types.EXTENSIONS_FIRST_LOAD, () => {
     console.log(`[${pluginName}] 插件加载中...`);
     try {
-      createSettings();
-      console.log(`[${pluginName}] 插件加载成功，已创建设置UI`);
+      // 尝试创建设置UI
+      setTimeout(() => {
+        console.log(`[${pluginName}] 准备创建设置UI (延迟1秒)`);
+        createSettings();
+      }, 1000);
+
+      // 多次尝试确保设置UI被正确创建
+      setTimeout(() => {
+        if ($('#cloud-backup-settings').length === 0) {
+          console.log(`[${pluginName}] 3秒后仍未找到设置UI，尝试重新创建`);
+          createSettings();
+        } else {
+          console.log(`[${pluginName}] 设置UI已存在，检查抽屉功能`);
+          initializeDrawer();
+        }
+      }, 3000);
+
+      // 再次检查，确保设置完全加载
+      setTimeout(() => {
+        if ($('#cloud-backup-settings').length === 0) {
+          console.log(`[${pluginName}] 5秒后仍未找到设置UI，最后尝试重新创建`);
+          createSettingsFallback(); // 直接使用备用方法
+        } else {
+          console.log(`[${pluginName}] 设置UI存在，确保事件绑定`);
+          bindSettingsEvents();
+          initializeDrawer();
+        }
+      }, 5000);
+
+      console.log(`[${pluginName}] 初始化完成，设置定时检查`);
 
       // 定期检查自动备份
       setInterval(checkAutoBackup, 60000); // 每分钟检查一次
     } catch (error) {
       console.error(`[${pluginName}] 插件加载出错:`, error);
+      // 尝试使用备用方法
+      setTimeout(() => {
+        try {
+          console.log(`[${pluginName}] 出错后尝试使用备用方法`);
+          createSettingsFallback();
+        } catch (fallbackError) {
+          console.error(`[${pluginName}] 备用方法也出错:`, fallbackError);
+        }
+      }, 2000);
     }
+  });
+
+  // 监听DOM变化，确保设置面板在SillyTavern的设置被打开时可见
+  $(document).on('click', '#settings_button', function () {
+    console.log(`[${pluginName}] 设置按钮被点击`);
+    setTimeout(() => {
+      if ($('#cloud-backup-settings').length === 0 && $('#extensions_settings').is(':visible')) {
+        console.log(`[${pluginName}] 设置已打开但未找到插件UI，尝试创建`);
+        createSettingsFallback();
+      }
+    }, 500);
   });
 });
 
