@@ -1,0 +1,71 @@
+.cloud-backup-container {
+  margin-bottom: 15px;
+}
+
+.cloud-backup-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px;
+}
+
+.cloud-backup-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 5px;
+}
+
+.cloud-backup-label {
+  min-width: 120px;
+  font-weight: bold;
+}
+
+.cloud-backup-row input[type='text'],
+.cloud-backup-row input[type='password'],
+.cloud-backup-row input[type='number'] {
+  flex: 1;
+  padding: 5px;
+  border-radius: 4px;
+  border: 1px solid var(--SmartThemeBorderColor);
+  background-color: var(--SmartThemeBodyColor);
+  color: var(--SmartThemeTextColor);
+}
+
+.cloud-backup-help {
+  font-size: 0.8em;
+  color: var(--SmartThemeSecondaryTextColor);
+  margin-left: 5px;
+}
+
+.cloud-backup-row button {
+  margin-right: 10px;
+}
+
+#cloud-backup-last-time {
+  font-style: italic;
+  color: var(--SmartThemeSecondaryTextColor);
+}
+
+/* 抽屉样式 */
+.inline-drawer {
+  margin-bottom: 10px;
+  border: 1px solid var(--SmartThemeBorderColor);
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.inline-drawer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 15px;
+  background-color: rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+}
+
+.inline-drawer-content {
+  display: none;
+  padding: 10px;
+  background-color: var(--SmartThemeBodyColor);
+}
