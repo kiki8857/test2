@@ -1,12 +1,11 @@
 {
   "display_name": "聊天云备份",
-  "loading_order": 100,
+  "loading_order": 500,
   "requires": [],
   "optional": [],
   "js": "index.js",
   "css": "style.css",
   "author": "SillyTavern",
   "version": "1.0.0",
-  "homePage": "https://github.com/yourusername/cloud-backup",
   "auto_update": false
 }
