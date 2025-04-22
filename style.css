@@ -1,5 +1,6 @@
 .cloud-backup-container {
   margin-bottom: 15px;
+  font-family: var(--MD-font-family, 'Inter', 'Roboto', sans-serif);
 }
 
 .cloud-backup-section {
@@ -14,11 +15,13 @@
   align-items: center;
   gap: 10px;
   margin-bottom: 5px;
+  flex-wrap: wrap;
 }
 
 .cloud-backup-label {
   min-width: 120px;
   font-weight: bold;
+  color: var(--SmartThemeBodyColor);
 }
 
 .cloud-backup-row input[type='text'],
@@ -30,6 +33,15 @@
   border: 1px solid var(--SmartThemeBorderColor);
   background-color: var(--SmartThemeBodyColor);
   color: var(--SmartThemeTextColor);
+  min-width: 200px;
+}
+
+.cloud-backup-row select {
+  border-radius: 4px;
+  border: 1px solid var(--SmartThemeBorderColor);
+  background-color: var(--SmartThemeBodyColor);
+  color: var(--SmartThemeTextColor);
+  padding: 5px;
 }
 
 .cloud-backup-help {
@@ -40,6 +52,22 @@
 
 .cloud-backup-row button {
   margin-right: 10px;
+  border-radius: 4px;
+  border: 1px solid var(--SmartThemeBorderColor);
+  background-color: var(--SmartThemePrimaryColor);
+  color: white;
+  padding: 5px 10px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.cloud-backup-row button:hover {
+  background-color: var(--SmartThemeHighlightColor);
+}
+
+.cloud-backup-row button:disabled {
+  background-color: #666;
+  cursor: not-allowed;
 }
 
 #cloud-backup-last-time {
@@ -48,24 +76,60 @@
 }
 
 /* 抽屉样式 */
-.inline-drawer {
+.cloud-backup-container .inline-drawer {
   margin-bottom: 10px;
   border: 1px solid var(--SmartThemeBorderColor);
   border-radius: 5px;
   overflow: hidden;
+  background-color: var(--SmartThemeBlurTintColor);
 }
 
-.inline-drawer-header {
+.cloud-backup-container .inline-drawer-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 10px 15px;
   background-color: rgba(0, 0, 0, 0.1);
   cursor: pointer;
+  user-select: none;
 }
 
-.inline-drawer-content {
-  display: none;
+.cloud-backup-container .inline-drawer-content {
   padding: 10px;
   background-color: var(--SmartThemeBodyColor);
+  transition: height 0.3s ease;
+}
+
+.cloud-backup-container .inline-drawer-icon {
+  transition: transform 0.3s ease;
+}
+
+.cloud-backup-container .inline-drawer-icon.fa-circle-chevron-up {
+  transform: rotate(180deg);
+}
+
+/* 修复GitHub版本的样式问题 */
+body.allgray .cloud-backup-row input,
+body.allgray .cloud-backup-row select,
+body.allgray .cloud-backup-row button {
+  color: var(--SmartThemeTextColor) !important;
+  background-color: var(--SmartThemeBodyColor) !important;
+}
+
+body.allgray .cloud-backup-container .inline-drawer {
+  border-color: var(--SmartThemeBorderColor) !important;
+}
+
+/* 确保设置面板可见 */
+.cloud-backup-container.extensions_settings {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* 黑暗主题支持 */
+@media (prefers-color-scheme: dark) {
+  .cloud-backup-container .inline-drawer-header {
+    background-color: rgba(255, 255, 255, 0.05);
+  }
 }

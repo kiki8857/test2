@@ -112,11 +112,24 @@ $(document).ready(function () {
         return { success: false, error: '未配置API信息' };
       }
 
-      const response = await fetch(extension_settings[pluginName].apiUrl, {
-        method: 'POST',
+      // 构建URL，将apiKey作为auth参数
+      const apiUrl = extension_settings[pluginName].apiUrl;
+      // 检查URL是否已包含.json扩展名
+      const baseUrl = apiUrl.endsWith('.json') ? apiUrl : `${apiUrl}${apiUrl.endsWith('/') ? '' : '/'}backups.json`;
+      // 添加auth参数
+      const apiUrlWithAuth = `${baseUrl}${baseUrl.includes('?') ? '&' : '?'}auth=${
+        extension_settings[pluginName].apiKey
+      }`;
+
+      console.log(
+        `[${pluginName}] 准备上传到: ${apiUrlWithAuth.replace(extension_settings[pluginName].apiKey, '***')}`,
+      );
+
+      const response = await fetch(apiUrlWithAuth, {
+        method: 'PUT', // 使用PUT而不是POST，更适合Firebase
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${extension_settings[pluginName].apiKey}`,
+          // 移除Authorization头，因为auth已经在URL中
         },
         body: JSON.stringify(data),
       });
@@ -220,14 +233,15 @@ $(document).ready(function () {
       return;
     }
 
+    // 创建HTML模板字符串
     const settingsHtml = `
-      <div id="cloud-backup-settings" class="cloud-backup-container">
+      <div id="cloud-backup-settings" class="cloud-backup-container extensions_settings">
           <div class="inline-drawer">
               <div class="inline-drawer-toggle inline-drawer-header">
                   <b>聊天云备份</b>
-                  <div class="inline-drawer-icon fa-solid fa-circle-chevron-down down"></div>
+                  <div class="inline-drawer-icon fa-solid fa-circle-chevron-down"></div>
               </div>
-              <div class="inline-drawer-content">
+              <div class="inline-drawer-content" style="display:none;">
                   <div class="cloud-backup-section">
                       <div class="cloud-backup-row">
                           <span class="cloud-backup-label">插件状态:</span>
@@ -285,7 +299,12 @@ $(document).ready(function () {
       </div>`;
 
     // 添加UI到设置区域
-    $('#extensions_settings').append(settingsHtml);
+    $('#extensions_settings2').append(settingsHtml);
+
+    // 如果#extensions_settings2不存在，尝试添加到#extensions_settings
+    if ($('#extensions_settings2').length === 0) {
+      $('#extensions_settings').append(settingsHtml);
+    }
 
     // 设置UI事件
     $('#cloud-backup-toggle').val(extension_settings[pluginName].enabled ? 'enabled' : 'disabled');
@@ -361,13 +380,28 @@ $(document).ready(function () {
 
     // 初始化抽屉功能
     initializeDrawer();
+
+    // 检查抽屉是否正确初始化，如果没有，手动再次尝试
+    setTimeout(() => {
+      if (!$('#cloud-backup-settings .inline-drawer-content').is(':visible')) {
+        initializeDrawer();
+      }
+    }, 1000);
   }
 
   // 初始化抽屉展开/收起功能
   function initializeDrawer() {
-    $(`#${pluginName}-settings .inline-drawer-toggle`).on('click', function () {
+    console.log(`[${pluginName}] 初始化抽屉功能`);
+
+    // 检查选择器是否有效
+    const toggleElements = $('#cloud-backup-settings .inline-drawer-toggle');
+    console.log(`[${pluginName}] 找到 ${toggleElements.length} 个抽屉切换元素`);
+
+    toggleElements.off('click').on('click', function () {
       const icon = $(this).find('.inline-drawer-icon');
       const content = $(this).next('.inline-drawer-content');
+
+      console.log(`[${pluginName}] 抽屉点击: 内容可见性=${content.is(':visible')}`);
 
       if (content.is(':visible')) {
         icon.removeClass('fa-circle-chevron-up').addClass('fa-circle-chevron-down');
@@ -377,6 +411,16 @@ $(document).ready(function () {
         content.slideDown(200);
       }
     });
+
+    // 添加全局CSS样式修复
+    const style = document.createElement('style');
+    style.innerHTML = `
+      #cloud-backup-settings .inline-drawer-content {
+        height: auto !important;
+        transition: all 0.3s ease;
+      }
+    `;
+    document.head.appendChild(style);
   }
 
   // 插件初始化时执行的事件
